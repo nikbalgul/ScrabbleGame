@@ -1,6 +1,6 @@
 package com.nikbal.scrabble.entity;
 
-import java.beans.Transient;
+import javax.persistence.Transient;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

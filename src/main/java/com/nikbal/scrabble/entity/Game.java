@@ -183,7 +183,6 @@ public class Game {
 					if (i == gapIndex.get(g)) {
 						int wordScore = board.getWordScore(tempMove.getLetters().get(i).getLoc(), dir, "vertical");
 						tempMove.setSumScore(tempMove.getSumScore() + wordScore);
-						board.setWordScore(wordScore);
 					}
 				}
 
@@ -192,7 +191,6 @@ public class Game {
 				if (board.hasNeighbor(tempMove.getLetters().get(i).getLoc())[1]) {
 					int wordScore = board.getWordScore(tempMove.getLetters().get(i).getLoc(), dir, "horizontal");
 					tempMove.setSumScore(tempMove.getSumScore() + wordScore);
-					board.setWordScore(wordScore);
 				}
 
 			}
@@ -203,7 +201,6 @@ public class Game {
 				if (i == 0) {
 					int wordScore = board.getWordScore(tempMove.getLetters().get(i).getLoc(), dir, "horizontal");
 					tempMove.setSumScore(tempMove.getSumScore() + wordScore);
-					board.setWordScore(wordScore);
 				}
 
 				// check the score of the word created in the horizontal
@@ -211,7 +208,6 @@ public class Game {
 				if (board.hasNeighbor(tempMove.getLetters().get(i).getLoc())[0]) {
 					int wordScore = board.getWordScore(tempMove.getLetters().get(i).getLoc(), dir, "vertical");
 					tempMove.setSumScore(tempMove.getSumScore() + wordScore);
-					board.setWordScore(wordScore);
 				}
 			}
 			// if the tempMove contains a single direction, add the score only for
@@ -219,11 +215,9 @@ public class Game {
 			if (dir.equals("single")) {
 				int wordScore;
 				wordScore = board.getWordScore(tempMove.getLetters().get(i).getLoc(), dir, "horizontal");
-				board.setWordScore(wordScore);
 				if (wordScore > tempMove.getLetters().get(i).getValue())
 					tempMove.setSumScore(tempMove.getSumScore() + wordScore);
 				wordScore = board.getWordScore(tempMove.getLetters().get(i).getLoc(), dir, "vertical");
-				board.setWordScore(wordScore);
 				if (wordScore > tempMove.getLetters().get(i).getValue())
 					tempMove.setSumScore(tempMove.getSumScore() + wordScore);
 			}

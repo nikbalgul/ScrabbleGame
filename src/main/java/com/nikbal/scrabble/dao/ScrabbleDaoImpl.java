@@ -2,8 +2,10 @@ package com.nikbal.scrabble.dao;
 
 import java.util.List;
 
+import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,11 +56,12 @@ public class ScrabbleDaoImpl implements ScrabbleDao {
 		getCurrentSession().update(board);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<Move> findMoveListByBoardId(Long boardId) {
 		Session session = getCurrentSession();
 		Criteria criteria = session.createCriteria(Move.class);
-		criteria.add("boardId", boardId);
-		criteria.list();
+		criteria.add(Restrictions.eq("boardId", boardId));
+		return criteria.list();
 	}
 }

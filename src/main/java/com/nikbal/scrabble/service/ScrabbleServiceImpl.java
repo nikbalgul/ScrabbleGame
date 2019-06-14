@@ -51,7 +51,7 @@ public class ScrabbleServiceImpl implements ScrabbleService {
 
 	@Override
 	public List<Move> getMoveListByBoardId(Long boardId) {
-		return scrabbleDao.findMoveListByBoardId(boardId);
+		return scrabbleDao.findMoveListByBoardId(boardId); 
 	}
 
 }

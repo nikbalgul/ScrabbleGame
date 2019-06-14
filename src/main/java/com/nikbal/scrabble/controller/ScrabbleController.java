@@ -18,6 +18,7 @@ import com.nikbal.scrabble.entity.Score;
 import com.nikbal.scrabble.model.BoardReportDTO;
 import com.nikbal.scrabble.model.Dictionary;
 import com.nikbal.scrabble.model.MoveWrapper;
+import com.nikbal.scrabble.model.SequenceDTO;
 import com.nikbal.scrabble.model.Square;
 import com.nikbal.scrabble.service.ScrabbleService;
 
@@ -53,37 +54,67 @@ public class ScrabbleController {
 	@RequestMapping(value = "/play", method = RequestMethod.POST)
 	private ResponseEntity<String> play(@RequestParam("boardId") Long boardId, @RequestBody MoveWrapper moves) {
 		Board board = game.getBoardList().get(boardId.intValue());
+		board.setMoveSeq(board.getMoveSeq() + 1);
+		if (board.getStatus().equals(String.valueOf('P'))) {
+			return ResponseEntity.ok().body("Yeni kelime ekleyemezsiniz! Board Status : P (Passive).");
+		}
 		for (int i = 0; i < moves.getMoves().size(); i++) {
 			game.insertWord(board, moves.getMoves().get(i));
 			sumScore += moves.getMoves().get(i).getSumScore();
-			Move move = setMoveParams(moves.getMoves().get(i));
-			move.setBoardId(boardId);
+			Move move = setMoveParams(moves.getMoves().get(i), board);
 			scrabbleService.saveMove(move);
 			Score score = setScoreParams(move);
 			scrabbleService.saveScore(score);
-			scrabbleService.updateBoard(board);
 		}
-
+		scrabbleService.updateBoard(board);
 		return ResponseEntity.ok().body("Hamleni yaptın! Puanın " + sumScore + "!");
 
 	}
-	
+
 	@RequestMapping(value = "/getWords", method = RequestMethod.GET)
 	private ResponseEntity<List<BoardReportDTO>> getWords(@RequestParam("boardId") Long boardId) {
 		Board board = game.getBoardList().get(boardId.intValue());
-		
 		List<Move> moveList = scrabbleService.getMoveListByBoardId(board.getBoardId());
 		List<BoardReportDTO> boardReportList = new ArrayList<>();
 		for (Move move : moveList) {
 			BoardReportDTO report = new BoardReportDTO(move.getSumScore(), move.getText());
 			boardReportList.add(report);
 		}
-	    if (!boardReportList.isEmpty()) {
-	        return ResponseEntity.ok().body(boardReportList);
-	     }else{
-	        return null;
-	     }
-		
+		if (!boardReportList.isEmpty()) {
+			return ResponseEntity.ok().body(boardReportList);
+		} else {
+			return ResponseEntity.notFound().build();
+		}
+	}
+
+	@RequestMapping(value = "/setStatus", method = RequestMethod.GET)
+	private ResponseEntity<String> setStatus(@RequestParam("boardId") Long boardId,
+			@RequestParam("status") String status) {
+		Board board = game.getBoardList().get(boardId.intValue());
+		if (status.equals(String.valueOf('A')) && board.getStatus().equals(String.valueOf('P'))) {
+			return ResponseEntity.ok().body("Board aktif yapılamaz! Board Status : P (Passive)");
+		}
+		board.setStatus(String.valueOf('P'));
+		scrabbleService.updateBoard(board);
+		return ResponseEntity.ok().body("Board Status : P (Passive)");
+	}
+
+	@RequestMapping(value = "/getBoardContent", method = RequestMethod.GET)
+	private ResponseEntity<List<SequenceDTO>> getBoardContent(@RequestParam("boardId") Long boardId,
+			@RequestParam("sequence") Integer sequence) {
+		Board board = game.getBoardList().get(boardId.intValue());
+		List<Move> moveList = scrabbleService.getMoveListBySequence(board.getBoardId(), sequence);
+		List<SequenceDTO> sequenceList = new ArrayList<>();
+
+		for (Move move : moveList) {
+			SequenceDTO dto = new SequenceDTO(move.getMoveSeq(), move.getText());
+			sequenceList.add(dto);
+		}
+		if (!sequenceList.isEmpty()) {
+			return ResponseEntity.ok().body(sequenceList);
+		} else {
+			return ResponseEntity.notFound().build();
+		}
 	}
 
 	private void setBoardParams(Board board) {
@@ -97,6 +128,7 @@ public class ScrabbleController {
 		board.setBoardArr(boardArr);
 		board.setStatus(String.valueOf('A'));
 		board.setGameId(game.getGameId());
+		board.setMoveSeq(0);
 	}
 
 	private Score setScoreParams(Move move) {
@@ -106,7 +138,7 @@ public class ScrabbleController {
 		return score;
 	}
 
-	private Move setMoveParams(Move fromMove) {
+	private Move setMoveParams(Move fromMove, Board board) {
 		Move move = new Move();
 		move.setStartx(fromMove.getStartx());
 		move.setStarty(fromMove.getStarty());
@@ -114,6 +146,8 @@ public class ScrabbleController {
 		move.setEndy(fromMove.getEndy());
 		move.setText(fromMove.getText());
 		move.setSumScore(fromMove.getSumScore());
+		move.setBoardId(board.getBoardId());
+		move.setMoveSeq(board.getMoveSeq());
 		return move;
 	}
 

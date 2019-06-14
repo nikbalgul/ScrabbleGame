@@ -64,4 +64,14 @@ public class ScrabbleDaoImpl implements ScrabbleDao {
 		criteria.add(Restrictions.eq("boardId", boardId));
 		return criteria.list();
 	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Move> findMoveListBySequence(Long boardId, Integer sequence) {
+		Session session = getCurrentSession();
+		Criteria criteria = session.createCriteria(Move.class);
+		criteria.add(Restrictions.eq("sequence", sequence));
+		criteria.add(Restrictions.eq("boardId", boardId));
+		return criteria.list();
+	}
 }

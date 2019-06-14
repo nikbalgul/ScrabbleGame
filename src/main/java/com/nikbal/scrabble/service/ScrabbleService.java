@@ -8,6 +8,7 @@ import com.nikbal.scrabble.entity.Move;
 import com.nikbal.scrabble.entity.Score;
 
 public interface ScrabbleService {
+	
 	void saveBoard(Board board);
 
 	Game saveOrUpdateGame(Game game);
@@ -19,4 +20,6 @@ public interface ScrabbleService {
 	void updateBoard(Board board);
 
 	List<Move> getMoveListByBoardId(Long boardId);
+
+	List<Move> getMoveListBySequence(Long boardId, Integer sequence);
 }

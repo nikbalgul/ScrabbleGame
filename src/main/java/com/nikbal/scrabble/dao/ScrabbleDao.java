@@ -22,4 +22,6 @@ public interface ScrabbleDao{
 	void updateBoard(Board board);
 
 	List<Move> findMoveListByBoardId(Long boardId);
+
+	List<Move> findMoveListBySequence(Long boardId, Integer sequence);
 }

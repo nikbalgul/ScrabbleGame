@@ -10,6 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.nikbal.scrabble.model.Tile;
 
@@ -37,12 +38,15 @@ public class Move {
 	private int endx;
 	@Column(name = "END_Y")
 	private int endy;
+	@Column(name = "MOVE_SEQ")
+	private Integer moveSeq;
 	@Column(name = "TEXT")
 	private String text;
 	@Column(name = "MOVE_NUM")
 	private int moveNum;
 	@Column(name = "SUM_SCORE")
 	private int sumScore;
+	@Transient
 	private List<Tile> letters = new ArrayList<>();
 
 	public Long getMoveId() {
@@ -123,6 +127,14 @@ public class Move {
 
 	public void setLetters(List<Tile> letters) {
 		this.letters = letters;
+	}
+
+	public Integer getMoveSeq() {
+		return moveSeq;
+	}
+
+	public void setMoveSeq(Integer moveSeq) {
+		this.moveSeq = moveSeq;
 	}
 
 }

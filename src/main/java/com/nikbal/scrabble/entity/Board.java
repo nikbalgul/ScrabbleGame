@@ -1,7 +1,7 @@
 package com.nikbal.scrabble.entity;
 
-import javax.persistence.Transient;
 
+//github.com/nikbalgul/ScrabbleGame.git
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.nikbal.scrabble.model.Coord;
 import com.nikbal.scrabble.model.Dictionary;
@@ -32,6 +33,8 @@ public class Board {
 	private Long gameId;
 	@Column(name = "STATUS")
 	private String status;
+	@Column(name = "MOVE_SEQ")
+	private Integer moveSeq;
 	@Transient
 	private Dictionary dict;
 	@Transient
@@ -85,6 +88,14 @@ public class Board {
 
 	public void setGameId(Long gameId) {
 		this.gameId = gameId;
+	}
+
+	public Integer getMoveSeq() {
+		return moveSeq;
+	}
+
+	public void setMoveSeq(Integer moveSeq) {
+		this.moveSeq = moveSeq;
 	}
 
 	/**

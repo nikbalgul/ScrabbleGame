@@ -53,8 +53,7 @@ public class AppConfig {
 		// no need shutdown, EmbeddedDatabaseFactoryBean will take care of this
 		EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
 		return builder.setType(EmbeddedDatabaseType.H2) // .H2 or .DERBY
-				.addScript("create-db.sql")
-				.addScript("data.sql").build();
+				.addScript("create-db.sql").build();
 	}
 
 	@Bean

@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan({ "com.nikbal.scrabble" })
 @Configuration
 public class SpringRootConfig {
-    @Autowired
-    @Qualifier("EmbeddedDataSource")
-    private DataSource dataSource;
+	@Autowired
+	@Qualifier("EmbeddedDataSource")
+	private DataSource dataSource;
 }

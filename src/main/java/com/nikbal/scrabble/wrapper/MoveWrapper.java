@@ -1,4 +1,4 @@
-package com.nikbal.scrabble.model;
+package com.nikbal.scrabble.wrapper;
 
 import java.util.List;
 

@@ -18,6 +18,8 @@ import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import com.nikbal.scrabble.entity.Game;
+
 @Configuration
 @PropertySource("classpath:database.properties")
 @EnableTransactionManagement
@@ -52,8 +54,7 @@ public class AppConfig {
 	public DataSource embeddedDataSource() {
 		// no need shutdown, EmbeddedDatabaseFactoryBean will take care of this
 		EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
-		return builder.setType(EmbeddedDatabaseType.H2) // .H2 or .DERBY
-				.addScript("create-db.sql").build();
+		return builder.setType(EmbeddedDatabaseType.H2).addScript("create-db.sql").build();
 	}
 
 	@Bean
@@ -61,6 +62,14 @@ public class AppConfig {
 		HibernateTransactionManager transactionManager = new HibernateTransactionManager();
 		transactionManager.setSessionFactory(sessionFactory().getObject());
 		return transactionManager;
+	}
+
+	// create singleton game object
+	@Bean
+	public Game game() {
+		Game game = new Game();
+		game.initTileBag();
+		return game;
 	}
 
 	private final Properties hibernateProperties() {

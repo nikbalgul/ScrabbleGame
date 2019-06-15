@@ -10,18 +10,18 @@ import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatche
 @ComponentScan("com.nikbal.scrabble")
 public class AppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
 
-    @Override
-    protected String[] getServletMappings() {
-        return new String[]{"/*"};
-    }
+	@Override
+	protected String[] getServletMappings() {
+		return new String[] { "/*" };
+	}
 
-    @Override
-    protected Class<?>[] getRootConfigClasses() {
-        return new Class<?>[]{AppInitializer.class};
-    }
+	@Override
+	protected Class<?>[] getRootConfigClasses() {
+		return new Class<?>[] { AppInitializer.class };
+	}
 
-    @Override
-    protected Class<?>[] getServletConfigClasses() {
-        return new Class[0];
-    }
+	@Override
+	protected Class<?>[] getServletConfigClasses() {
+		return new Class[0];
+	}
 }

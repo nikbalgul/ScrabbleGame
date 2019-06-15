@@ -58,10 +58,17 @@ public class ScrabbleController {
 		if (board.getStatus().equals(String.valueOf('P'))) {
 			return ResponseEntity.ok().body("Yeni kelime ekleyemezsiniz! Board Status : P (Passive).");
 		}
-		for (int i = 0; i < moves.getMoves().size(); i++) {
-			game.insertWord(board, moves.getMoves().get(i));
-			sumScore += moves.getMoves().get(i).getSumScore();
-			Move move = setMoveParams(moves.getMoves().get(i), board);
+		List<Move> movesOnBoard = scrabbleService.getMoveListByBoardId(board.getBoardId());
+		for (Move move : movesOnBoard) {
+			board.getTilesOnBoard().addAll(move.getLetters());
+		}
+		for (Move move : moves.getMoves()) {
+			if (game.isLegalMove(move, board) == null) {
+				return ResponseEntity.ok().body("Geçersiz hamle! Lütfen bir daha deneyiniz!");
+			}
+			game.insertWord(board, move);
+			sumScore += move.getSumScore();
+			move = setMoveParams(move, board);
 			scrabbleService.saveMove(move);
 			Score score = setScoreParams(move);
 			scrabbleService.saveScore(score);

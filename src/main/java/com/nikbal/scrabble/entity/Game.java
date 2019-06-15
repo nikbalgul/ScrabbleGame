@@ -110,6 +110,18 @@ public class Game {
 		}
 	}
 
+	public Move isLegalMove(Move word, Board board) {
+		// no moves if there is no input
+		if (word.getText().isEmpty())
+			return null;
+		// create a list of letter tiles from the given string
+		Move letters = new Move();
+		for (int i = 0; i < word.getText().length(); i++) {
+			letters.getLetters().add(new Tile(word.getText().toUpperCase().charAt(i), -1));
+		}
+		return board.getPossibility(letters);
+	}
+
 	/**
 	 * inserts the given word at the given letter coordinates also activates any
 	 * score modifiers

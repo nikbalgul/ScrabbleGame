@@ -1,34 +1,37 @@
 package com.nikbal.scrabble.controller;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nikbal.scrabble.dto.BoardReportDTO;
 import com.nikbal.scrabble.dto.SequenceDTO;
 import com.nikbal.scrabble.entity.Board;
-import com.nikbal.scrabble.entity.Game;
 import com.nikbal.scrabble.entity.Move;
 import com.nikbal.scrabble.entity.Score;
+import com.nikbal.scrabble.model.Game;
 import com.nikbal.scrabble.model.MoveModel;
+import com.nikbal.scrabble.model.Tile;
 import com.nikbal.scrabble.service.BoardService;
 import com.nikbal.scrabble.service.MoveService;
 import com.nikbal.scrabble.service.ScoreService;
 import com.nikbal.scrabble.wrapper.MoveWrapper;
 
 @RestController
-@RequestMapping("/move")
+@RequestMapping(value = "/move")
 public class MoveController {
 	@Autowired
 	private MoveService moveService;
@@ -40,51 +43,44 @@ public class MoveController {
 	@Autowired
 	Game game;
 
-	@RequestMapping(value = "/play", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	private ResponseEntity<String> play(@RequestBody MoveWrapper moveWrapper) {
-		Board board = game.getBoardList().get(moveWrapper.getBoardId().intValue());
-		// List<MoveModel> moveModels = createMoveModelList(moves);
-
-		if (board.getStatus().equals(String.valueOf('P'))) {
-			return ResponseEntity.ok().body("Yeni kelime ekleyemezsiniz! Board Status : P (Passive).");
+	private static final Logger logger = Logger.getLogger(BoardController.class);
+	
+	@PostMapping(value = "/play", consumes={"application/json"})
+    @ResponseBody
+	private ResponseEntity<List<Move>> play(@RequestBody MoveWrapper moveWrapper) {
+		Board board = game.getBoardFromGame(moveWrapper.getBoardId());
+		if (board == null || board.getStatus().equals(String.valueOf('P'))) {
+			logger.info("Oynamak istediğiniz board pasiftir!");
+			return ResponseEntity.notFound().build();
 		}
 		board.setMoveSeq(board.getMoveSeq() + 1);
-		List<Move> movesOnBoard = moveService.getMoveListByBoardId(board.getBoardId());
-		for (Move move : movesOnBoard) {
-			board.getTilesOnBoard().addAll(move.getLetters());
-		}
+		List<Move> moveList = new ArrayList<>();
 		for (MoveModel moveModel : moveWrapper.getMoves()) {
-			Move legalMove = game.isLegalMove(convertToMove(moveModel, board), board);
+			Move move = convertToMove(moveModel, board);
+			Move legalMove = game.isLegalMove(move, board);
 			if (legalMove == null) {
-				return ResponseEntity.ok().body("Geçersiz hamle!");
+				return ResponseEntity.notFound().build();
 			}
-			game.insertWord(board, legalMove);
-			sumScore += legalMove.getSumScore();
-			moveService.saveMove(legalMove);
-			Score score = setScoreParams(legalMove);
+			move.setLetters(legalMove.getLetters());
+			game.insertWord(board, move);
+			board.setSumScore(board.getSumScore() + move.getSumScore());
+			moveService.saveMove(move);
+			Score score = setScoreParams(move);
 			scoreService.saveScore(score);
+			setBoardTiles(board, move);
+			moveList.add(move);
 		}
 		boardService.updateBoard(board);
-		return ResponseEntity.ok().body("Hamleni yaptın! Puanın " + sumScore + "!");
+		return ResponseEntity.ok().body(moveList);
 
 	}
 
-	private List<MoveModel> createMoveModelList(String moves) {
-		JSONObject jObject = new JSONObject(moves);
-		List<MoveModel> moveList = new ArrayList<>();
-		JSONArray array = jObject.getJSONArray("moves");
-		for (int i = 0; i < array.length(); i++) {
-			if (array.get(i) instanceof JSONObject) {
-				MoveModel moveModel = new MoveModel();
-				moveModel.setStartx((int) jObject.get("startx"));
-				moveModel.setStarty((int) jObject.get("starty"));
-				moveModel.setEndx((int) jObject.get("endx"));
-				moveModel.setEndy((int) jObject.get("endy"));
-				moveModel.setText((String) jObject.get("text"));
-				moveList.add(moveModel);
-			}
+	private void setBoardTiles(Board board, Move move) {
+		if (CollectionUtils.isEmpty(board.getTilesOnBoard())){
+			board.setTilesOnBoard(new HashSet<Tile>(move.getLetters()));
+		} else {
+			board.getTilesOnBoard().addAll(move.getLetters());
 		}
-		return moveList;
 	}
 
 	private Move convertToMove(MoveModel moveModel, Board board) {
@@ -97,12 +93,16 @@ public class MoveController {
 		move.setBoardId(board.getBoardId());
 		move.setMoveNum(move.getMoveNum() + 1);
 		move.setMoveSeq(board.getMoveSeq());
-		return null;
+		return move;
 	}
 
 	@RequestMapping(value = "/getWords", method = RequestMethod.GET)
 	private ResponseEntity<List<BoardReportDTO>> getWords(@RequestParam("boardId") Long boardId) {
-		Board board = game.getBoardList().get(boardId.intValue());
+		Board board = game.getBoardFromGame(boardId);
+		if (board.getStatus().equals(String.valueOf('P'))) {
+			logger.info("Board Status : P (Passive)");
+			return ResponseEntity.notFound().build();
+		}
 		List<Move> moveList = moveService.getMoveListByBoardId(board.getBoardId());
 		List<BoardReportDTO> boardReportList = new ArrayList<>();
 		for (Move move : moveList) {
@@ -119,10 +119,10 @@ public class MoveController {
 	@RequestMapping(value = "/getBoardContent", method = RequestMethod.GET)
 	private ResponseEntity<List<SequenceDTO>> getBoardContent(@RequestParam("boardId") Long boardId,
 			@RequestParam("sequence") Integer sequence) {
-		Board board = game.getBoardList().get(boardId.intValue());
-		if (board.getStatus().equals(String.valueOf('P'))) {
-			ResponseEntity.status(HttpStatus.FORBIDDEN)
-					.body("Pasif halde olan board görüntülenmez! Board Status : P (Passive)");
+		Board board = game.getBoardFromGame(boardId);
+		if (board == null || board.getStatus().equals(String.valueOf('P'))) {
+			logger.info("Board Status : P (Passive)");
+			return ResponseEntity.notFound().build();
 		}
 		List<Move> moveList = moveService.getMoveListBySequence(board.getBoardId(), sequence);
 		List<SequenceDTO> sequenceList = new ArrayList<>();

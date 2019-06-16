@@ -19,8 +19,8 @@ import javax.persistence.Table;
 @Table(name = "SCORE")
 public class Score {
 	@Id
-	@SequenceGenerator(name= "SCORE_SEQUENCE", sequenceName = "SCORE_SEQUENCE_ID", initialValue=1, allocationSize = 1)
-	@GeneratedValue(strategy=GenerationType.AUTO, generator="SCORE_SEQUENCE")
+	@SequenceGenerator(name = "SCORE_SEQUENCE", sequenceName = "SCORE_SEQUENCE_ID", initialValue = 1, allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.AUTO, generator = "SCORE_SEQUENCE")
 	private Long scoreId;
 	@Column(name = "MOVEID")
 	private Long moveId;
@@ -51,4 +51,7 @@ public class Score {
 		this.value = value;
 	}
 
+	public String toString() {
+		return "SCORE(" + " MOVEID: " + moveId + " VALUE:" + value + " )";
+	}
 }

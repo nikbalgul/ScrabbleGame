@@ -2,6 +2,7 @@ package com.nikbal.scrabble.model;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -17,16 +18,27 @@ public class Dictionary {
 	private List<List<String>> list = new ArrayList<>();
 	private List<String> allChecked = new ArrayList<>();
 	private List<String> legalChecked = new ArrayList<>();
-	private String filePath = "src/main/resources/";
-	private String tilesFile = "tiles.txt";
+
+	public List<List<String>> getList() {
+		return list;
+	}
+
+	public void setList(List<List<String>> list) {
+		this.list = list;
+	}
 
 	/**
-	 * initializes the filepath for the dictionary
-	 * 
-	 * @param filename path for the dictionary file
+	 * initializes the file path for the dictionary
+	 *
 	 */
 	public Dictionary() {
-		file = new File(filePath + tilesFile);
+		ClassLoader classLoader = getClass().getClassLoader();
+		URL resource = classLoader.getResource("scrabble_turkish_dictionary.txt");
+		if (resource == null) {
+			throw new IllegalArgumentException("file is not found!");
+		} else {
+			file = new File(resource.getFile());
+		}
 		saveWordsAlphabetically();
 	}
 
@@ -35,7 +47,7 @@ public class Dictionary {
 	 * letters in order to save time searching
 	 */
 	private void saveWordsAlphabetically() {
-		try (Scanner scanner = new Scanner(file)) {
+		try (Scanner scanner = new Scanner(file)){
 			// read file line by line, checking if word is in the file
 			String firstTwoLetters = null;
 			// scrabble_turkish_dictionary.txt has approx 270000 words, divided by first two
@@ -58,7 +70,6 @@ public class Dictionary {
 					}
 				}
 			}
-			scanner.close();
 		} catch (FileNotFoundException e) {
 			System.out.println("File not found: " + file);
 		}
@@ -99,14 +110,15 @@ public class Dictionary {
 		String w = word.toLowerCase();
 		char firstLetter = w.charAt(0);
 		char secondLetter = w.charAt(1);
-		for (int i = 0; i < list.size(); i++)
-			if (list.get(i).get(0).charAt(0) == firstLetter && list.get(i).get(0).charAt(1) == secondLetter) {
-				for (int j = 0; j < list.get(i).size(); j++) {
-					if (list.get(i).get(j).toLowerCase().equals(w))
+		for (int i = 0; i < this.list.size(); i++)
+			if (this.list.get(i).get(0).charAt(0) == firstLetter && this.list.get(i).get(0).charAt(1) == secondLetter) {
+				for (int j = 0; j < this.list.get(i).size(); j++) {
+					if (this.list.get(i).get(j).equalsIgnoreCase(w))
 						return true;
 				}
 				return false;
 			}
 		return false;
 	}
+
 }

@@ -23,6 +23,12 @@ public class Tile {
 		loc = new Coord(-1, -1);
 	}
 
+	public Tile(char l, int v, Coord location) {
+		letter = l;
+		value = v;
+		loc = location;
+	}
+
 	public Tile(char chr) {
 		this.letter = chr;
 	}
@@ -70,5 +76,4 @@ public class Tile {
 	public int hashCode() {
 		return 0;
 	}
-
 }

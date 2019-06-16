@@ -18,7 +18,7 @@ import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import com.nikbal.scrabble.entity.Game;
+import com.nikbal.scrabble.model.Game;
 
 @Configuration
 @PropertySource("classpath:database.properties")
@@ -77,7 +77,6 @@ public class AppConfig {
 		hibernateProperties.setProperty("spring.jpa.generate-ddl", "false");
 		hibernateProperties.setProperty("spring.jpa.hibernate.ddl-auto", "create");
 		hibernateProperties.setProperty("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
-
 		return hibernateProperties;
 	}
 }

@@ -17,7 +17,7 @@ import com.nikbal.scrabble.model.Tile;
 /**
  * 
  * 
- *
+ * MOVE Entity
  *
  */
 
@@ -137,4 +137,8 @@ public class Move {
 		this.moveSeq = moveSeq;
 	}
 
+	public String toString() {
+		return "MOVE(" + " Board ID: " + boardId + " STARTX:" + startx + " STARTY:" + starty + " ENDX:" + endx
+				+ " ENDY:" + endy + " MOVENUM:" + moveNum + "SCORE:" + sumScore + " )";
+	}
 }

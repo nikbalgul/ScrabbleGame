@@ -19,12 +19,11 @@ public class Dictionary {
 	private List<String> legalChecked = new ArrayList<>();
 	private String filePath = "src/main/resources/";
 	private String tilesFile = "tiles.txt";
-	
+
 	/**
 	 * initializes the filepath for the dictionary
 	 * 
-	 * @param filename
-	 *            path for the dictionary file
+	 * @param filename path for the dictionary file
 	 */
 	public Dictionary() {
 		file = new File(filePath + tilesFile);
@@ -36,14 +35,13 @@ public class Dictionary {
 	 * letters in order to save time searching
 	 */
 	private void saveWordsAlphabetically() {
-		try {
-			Scanner scanner = new Scanner(file);
+		try (Scanner scanner = new Scanner(file)) {
 			// read file line by line, checking if word is in the file
 			String firstTwoLetters = null;
 			// scrabble_turkish_dictionary.txt has approx 270000 words, divided by first two
 			// letters (26*26) is average of 400-600 words per first two chars.
 			// This saves time and prevents arryalist from resizing too much
-			ArrayList<String> currentLetterList = new ArrayList<String>(400);
+			List<String> currentLetterList = new ArrayList<>(400);
 			while (scanner.hasNextLine()) {
 				String word = scanner.nextLine().toLowerCase();
 				if (word.length() >= 2) {
@@ -55,7 +53,7 @@ public class Dictionary {
 					else {
 						list.add(currentLetterList);
 						firstTwoLetters = word.substring(0, 2);
-						currentLetterList = new ArrayList<String>();
+						currentLetterList = new ArrayList<>();
 						currentLetterList.add(word);
 					}
 				}
@@ -65,15 +63,14 @@ public class Dictionary {
 			System.out.println("File not found: " + file);
 		}
 		for (int i = list.size() - 1; i >= 0; i--)
-			if (list.get(i).size() == 0)
+			if (list.get(i).isEmpty())
 				list.remove(i);
 	}
 
 	/**
 	 * checks if the given word is a legal scrabble word
 	 * 
-	 * @param word
-	 *            word to check
+	 * @param word word to check
 	 * @return true or false
 	 */
 	public boolean isWord(String word) {
@@ -93,8 +90,7 @@ public class Dictionary {
 	/**
 	 * checks if the given word is in the supplied dictionary
 	 * 
-	 * @param word
-	 *            word to check
+	 * @param word word to check
 	 * @return true or false
 	 */
 	private boolean inDict(String word) {
@@ -104,8 +100,7 @@ public class Dictionary {
 		char firstLetter = w.charAt(0);
 		char secondLetter = w.charAt(1);
 		for (int i = 0; i < list.size(); i++)
-			if (list.get(i).get(0).charAt(0) == firstLetter
-					&& list.get(i).get(0).charAt(1) == secondLetter) {
+			if (list.get(i).get(0).charAt(0) == firstLetter && list.get(i).get(0).charAt(1) == secondLetter) {
 				for (int j = 0; j < list.get(i).size(); j++) {
 					if (list.get(i).get(j).toLowerCase().equals(w))
 						return true;

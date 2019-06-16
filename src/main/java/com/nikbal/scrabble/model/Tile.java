@@ -27,15 +27,9 @@ public class Tile {
 		this.letter = chr;
 	}
 
-	public char getChar() {
-		return letter;
-	}
-
 	public int getValue() {
 		return value;
 	}
-
-	
 	
 	public char getLetter() {
 		return letter;

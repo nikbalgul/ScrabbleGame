@@ -1,8 +1,6 @@
 package com.nikbal.scrabble.wrapper;
 
-import java.util.List;
-
-import com.nikbal.scrabble.entity.Move;
+import com.nikbal.scrabble.model.MoveModel;
 
 /**
  * 
@@ -12,15 +10,24 @@ import com.nikbal.scrabble.entity.Move;
  */
 
 public class MoveWrapper {
-	private List<Move> moves;
 
-	public List<Move> getMoves() {
+	private Long boardId;
+	private MoveModel[] moves;
+
+	public Long getBoardId() {
+		return boardId;
+	}
+
+	public void setBoardId(Long boardId) {
+		this.boardId = boardId;
+	}
+
+	public MoveModel[] getMoves() {
 		return moves;
 	}
 
-	public void setMoves(List<Move> moves) {
+	public void setMoves(MoveModel[] moves) {
 		this.moves = moves;
 	}
 
-	
 }

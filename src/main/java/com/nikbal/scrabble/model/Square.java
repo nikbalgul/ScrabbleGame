@@ -77,11 +77,12 @@ public class Square {
 				return value * 2;
 			else if (scoreModifier.equals("3xl"))
 				return value * 3;
-		} else if (type.equals("word"))
+		} else if (type.equals("word")) {
 			if (scoreModifier.equals("2xw"))
 				return value * 2;
 			else if (scoreModifier.equals("3xw"))
 				return value * 3;
+		}
 		return value;
 	}
 
@@ -115,7 +116,7 @@ public class Square {
 	@Override
 	public String toString() {
 		if (letter != null)
-			return letter.getChar() + " ";
+			return letter.getLetter() + " ";
 		else if (scoreModifier != null) {
 			if (scoreModifier.equals("2xl"))
 				return 1 + " ";

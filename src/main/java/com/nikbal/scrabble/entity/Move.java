@@ -43,7 +43,7 @@ public class Move {
 	@Column(name = "TEXT")
 	private String text;
 	@Column(name = "MOVE_NUM")
-	private int moveNum;
+	private int moveNum = 0;
 	@Column(name = "SUM_SCORE")
 	private int sumScore;
 	@Transient

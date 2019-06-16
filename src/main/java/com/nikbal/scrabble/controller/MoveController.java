@@ -3,8 +3,11 @@ package com.nikbal.scrabble.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +21,7 @@ import com.nikbal.scrabble.entity.Board;
 import com.nikbal.scrabble.entity.Game;
 import com.nikbal.scrabble.entity.Move;
 import com.nikbal.scrabble.entity.Score;
+import com.nikbal.scrabble.model.MoveModel;
 import com.nikbal.scrabble.service.BoardService;
 import com.nikbal.scrabble.service.MoveService;
 import com.nikbal.scrabble.service.ScoreService;
@@ -36,11 +40,11 @@ public class MoveController {
 	@Autowired
 	Game game;
 
-	// {"moves":[{"name":"shail1","age":"2"},{"name":"shail2","age":"3"}]}
+	@RequestMapping(value = "/play", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	private ResponseEntity<String> play(@RequestBody MoveWrapper moveWrapper) {
+		Board board = game.getBoardList().get(moveWrapper.getBoardId().intValue());
+		// List<MoveModel> moveModels = createMoveModelList(moves);
 
-	@RequestMapping(value = "/play", method = RequestMethod.POST)
-	private ResponseEntity<String> play(@RequestParam("boardId") Long boardId, @RequestBody MoveWrapper moves) {
-		Board board = game.getBoardList().get(boardId.intValue());
 		if (board.getStatus().equals(String.valueOf('P'))) {
 			return ResponseEntity.ok().body("Yeni kelime ekleyemezsiniz! Board Status : P (Passive).");
 		}
@@ -49,20 +53,51 @@ public class MoveController {
 		for (Move move : movesOnBoard) {
 			board.getTilesOnBoard().addAll(move.getLetters());
 		}
-		for (Move move : moves.getMoves()) {
-			if (game.isLegalMove(move, board) == null) {
+		for (MoveModel moveModel : moveWrapper.getMoves()) {
+			Move legalMove = game.isLegalMove(convertToMove(moveModel, board), board);
+			if (legalMove == null) {
 				return ResponseEntity.ok().body("Geçersiz hamle!");
 			}
-			game.insertWord(board, move);
-			sumScore += move.getSumScore();
-			move = setMoveParams(move, board);
-			moveService.saveMove(move);
-			Score score = setScoreParams(move);
+			game.insertWord(board, legalMove);
+			sumScore += legalMove.getSumScore();
+			moveService.saveMove(legalMove);
+			Score score = setScoreParams(legalMove);
 			scoreService.saveScore(score);
 		}
 		boardService.updateBoard(board);
 		return ResponseEntity.ok().body("Hamleni yaptın! Puanın " + sumScore + "!");
 
+	}
+
+	private List<MoveModel> createMoveModelList(String moves) {
+		JSONObject jObject = new JSONObject(moves);
+		List<MoveModel> moveList = new ArrayList<>();
+		JSONArray array = jObject.getJSONArray("moves");
+		for (int i = 0; i < array.length(); i++) {
+			if (array.get(i) instanceof JSONObject) {
+				MoveModel moveModel = new MoveModel();
+				moveModel.setStartx((int) jObject.get("startx"));
+				moveModel.setStarty((int) jObject.get("starty"));
+				moveModel.setEndx((int) jObject.get("endx"));
+				moveModel.setEndy((int) jObject.get("endy"));
+				moveModel.setText((String) jObject.get("text"));
+				moveList.add(moveModel);
+			}
+		}
+		return moveList;
+	}
+
+	private Move convertToMove(MoveModel moveModel, Board board) {
+		Move move = new Move();
+		move.setText(moveModel.getText());
+		move.setStartx(moveModel.getStartx());
+		move.setStarty(moveModel.getStarty());
+		move.setEndx(moveModel.getEndx());
+		move.setEndy(moveModel.getEndy());
+		move.setBoardId(board.getBoardId());
+		move.setMoveNum(move.getMoveNum() + 1);
+		move.setMoveSeq(board.getMoveSeq());
+		return null;
 	}
 
 	@RequestMapping(value = "/getWords", method = RequestMethod.GET)
@@ -108,19 +143,6 @@ public class MoveController {
 		score.setMoveId(move.getMoveId());
 		score.setValue(move.getSumScore());
 		return score;
-	}
-
-	private Move setMoveParams(Move fromMove, Board board) {
-		Move move = new Move();
-		move.setStartx(fromMove.getStartx());
-		move.setStarty(fromMove.getStarty());
-		move.setEndx(fromMove.getEndx());
-		move.setEndy(fromMove.getEndy());
-		move.setText(fromMove.getText());
-		move.setSumScore(fromMove.getSumScore());
-		move.setBoardId(board.getBoardId());
-		move.setMoveSeq(board.getMoveSeq());
-		return move;
 	}
 
 }

@@ -15,6 +15,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import com.nikbal.scrabble.constant.ScrabbleConstant;
 import com.nikbal.scrabble.model.Coord;
 import com.nikbal.scrabble.model.Tile;
 
@@ -130,8 +131,8 @@ public class Game {
 	 *
 	 */
 	public void insertWord(Board board, Move move) {
-		// direction to be added onto the board, by default = "vertical"
-		String dir = "single";
+		// direction to be added onto the board, by default = ScrabbleConstant.VERTICAL
+		String dir = ScrabbleConstant.SINGLE;
 		Move tempMove = new Move();
 		int startx = move.getStartx();
 		int starty = move.getStarty();
@@ -139,18 +140,16 @@ public class Game {
 		int endy = move.getEndy();
 
 		if (startx == endx) {
-			dir = "vertical";
+			dir = ScrabbleConstant.VERTICAL;
 		} else if (starty == endy) {
-			dir = "horizontal";
-		} else {
-			return;
+			dir = ScrabbleConstant.HORIZONTAL;
 		}
 
 		for (int i = 0; i < move.getText().length(); i++) {
 
 			char chr = move.getText().charAt(i);
 			Tile tile = new Tile(chr, 0);
-			if (dir.equals("vertical")) {
+			if (dir.equals(ScrabbleConstant.VERTICAL)) {
 				tile.setLoc(new Coord(startx, starty++));
 			} else {
 				tile.setLoc(new Coord(startx++, starty));
@@ -187,13 +186,13 @@ public class Game {
 			int row = tempMove.getLetters().get(i).getLoc().getRow();
 			int col = tempMove.getLetters().get(i).getLoc().getCol();
 			// if the tempMove was placed in the vertical direction...
-			if (dir.equals("vertical")) {
+			if (dir.equals(ScrabbleConstant.VERTICAL)) {
 				// to avoid repeated scoring, only check the score of the
 				// created word in the vertical direction once, or at the start
 				// of every gap
 				for (int g = 0; g < gapIndex.size(); g++) {
 					if (i == gapIndex.get(g)) {
-						int wordScore = board.getWordScore(tempMove.getLetters().get(i).getLoc(), dir, "vertical");
+						int wordScore = board.getWordScore(tempMove.getLetters().get(i).getLoc(), dir, ScrabbleConstant.VERTICAL);
 						tempMove.setSumScore(tempMove.getSumScore() + wordScore);
 					}
 				}
@@ -201,35 +200,35 @@ public class Game {
 				// check the score of the word created in the horizontal
 				// direction, for the current coordinate
 				if (board.hasNeighbor(tempMove.getLetters().get(i).getLoc())[1]) {
-					int wordScore = board.getWordScore(tempMove.getLetters().get(i).getLoc(), dir, "horizontal");
+					int wordScore = board.getWordScore(tempMove.getLetters().get(i).getLoc(), dir, ScrabbleConstant.HORIZONTAL);
 					tempMove.setSumScore(tempMove.getSumScore() + wordScore);
 				}
 
 			}
 			// if the tempMove was placed in the horizontal direction...
-			if (dir.equals("horizontal")) {
+			if (dir.equals(ScrabbleConstant.HORIZONTAL)) {
 				// to avoid repeated scoring, only check the score of the
 				// created word in the horizontal direction once
 				if (i == 0) {
-					int wordScore = board.getWordScore(tempMove.getLetters().get(i).getLoc(), dir, "horizontal");
+					int wordScore = board.getWordScore(tempMove.getLetters().get(i).getLoc(), dir, ScrabbleConstant.HORIZONTAL);
 					tempMove.setSumScore(tempMove.getSumScore() + wordScore);
 				}
 
 				// check the score of the word created in the horizontal
 				// direction, for the current coordinate
 				if (board.hasNeighbor(tempMove.getLetters().get(i).getLoc())[0]) {
-					int wordScore = board.getWordScore(tempMove.getLetters().get(i).getLoc(), dir, "vertical");
+					int wordScore = board.getWordScore(tempMove.getLetters().get(i).getLoc(), dir, ScrabbleConstant.VERTICAL);
 					tempMove.setSumScore(tempMove.getSumScore() + wordScore);
 				}
 			}
 			// if the tempMove contains a single direction, add the score only for
 			// the directions that have adjacent letters on the board
-			if (dir.equals("single")) {
+			if (dir.equals(ScrabbleConstant.SINGLE)) {
 				int wordScore;
-				wordScore = board.getWordScore(tempMove.getLetters().get(i).getLoc(), dir, "horizontal");
+				wordScore = board.getWordScore(tempMove.getLetters().get(i).getLoc(), dir, ScrabbleConstant.HORIZONTAL);
 				if (wordScore > tempMove.getLetters().get(i).getValue())
 					tempMove.setSumScore(tempMove.getSumScore() + wordScore);
-				wordScore = board.getWordScore(tempMove.getLetters().get(i).getLoc(), dir, "vertical");
+				wordScore = board.getWordScore(tempMove.getLetters().get(i).getLoc(), dir, ScrabbleConstant.VERTICAL);
 				if (wordScore > tempMove.getLetters().get(i).getValue())
 					tempMove.setSumScore(tempMove.getSumScore() + wordScore);
 			}
@@ -246,7 +245,7 @@ public class Game {
 	 */
 	public boolean hasLetter(char letter) {
 		for (Tile tile : this.getTileBag()) {
-			if (tile.getChar() == letter) {
+			if (tile.getLetter() == letter) {
 				return true;
 			}
 		}

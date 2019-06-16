@@ -13,6 +13,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import com.nikbal.scrabble.constant.ScrabbleConstant;
 import com.nikbal.scrabble.model.Coord;
 import com.nikbal.scrabble.model.Dictionary;
 import com.nikbal.scrabble.model.Square;
@@ -172,9 +173,9 @@ public class Board {
 		int c = coord.getCol();
 
 		// set the direction of the coordinate change variables
-		if (dirCheck.equals("vertical"))
+		if (dirCheck.equals(ScrabbleConstant.VERTICAL))
 			rowChange++;
-		else if (dirCheck.equals("horizontal"))
+		else if (dirCheck.equals(ScrabbleConstant.HORIZONTAL))
 			colChange++;
 
 		// for each letter left of or above (depending on direction)
@@ -224,25 +225,25 @@ public class Board {
 		int turn = boardArr[r][c].getTurnPlaced();
 
 		// set the direction of the coordinate change variables
-		if (dir.equals("vertical"))
+		if (dir.equals(ScrabbleConstant.VERTICAL))
 			rowChange++;
-		else if (dir.equals("horizontal"))
+		else if (dir.equals(ScrabbleConstant.HORIZONTAL))
 			colChange++;
 
 		// check if the letter above or to the left of the current letter was
 		// placed before this turn, meaning this turn creates a new word in that
 		// direction (depends on given direction)
-		if (r - rowChange >= 0 && c - colChange >= 0 && boardArr[r - rowChange][c - colChange].getLetter() != null) {
-			if (boardArr[r - rowChange][c - colChange].getTurnPlaced() < turn)
-				return true;
+		if (r - rowChange >= 0 && c - colChange >= 0 && boardArr[r - rowChange][c - colChange].getLetter() != null
+				&& boardArr[r - rowChange][c - colChange].getTurnPlaced() < turn) {
+			return true;
 		}
 
 		// check if the letter below or to the right of the current letter was
 		// placed before this turn, meaning this turn creates a new word in that
 		// direction (depends on given direction)
-		if (r + rowChange >= 0 && c + colChange >= 0 && boardArr[r + rowChange][c + colChange].getLetter() != null) {
-			if (boardArr[r + rowChange][c + colChange].getTurnPlaced() < turn)
-				return true;
+		if (r + rowChange >= 0 && c + colChange >= 0 && boardArr[r + rowChange][c + colChange].getLetter() != null
+				&& boardArr[r + rowChange][c + colChange].getTurnPlaced() < turn) {
+			return true;
 		}
 		return false;
 	}
@@ -268,7 +269,7 @@ public class Board {
 	 */
 	public boolean contains(Tile letter) {
 		while (tilesOnBoard.iterator().hasNext()) {
-			if (letter.getChar() == tilesOnBoard.iterator().next().getChar()) {
+			if (letter.getLetter() == tilesOnBoard.iterator().next().getLetter()) {
 				return true;
 			}
 		}
@@ -280,13 +281,11 @@ public class Board {
 		int starty = letters.getStarty();
 		int endx = letters.getEndx();
 		int endy = letters.getEndy();
-		String dir = "single";
+		String dir = ScrabbleConstant.SINGLE;
 		if (startx == endx) {
-			dir = "vertical";
+			dir = ScrabbleConstant.VERTICAL;
 		} else if (starty == endy) {
-			dir = "horizontal";
-		} else {
-			return null;
+			dir = ScrabbleConstant.HORIZONTAL;
 		}
 		// check for an empty letter list (invalid input)
 		if (letters == null || letters.getLetters().isEmpty())
@@ -296,17 +295,16 @@ public class Board {
 			return getFirstMove(letters, dir);
 		List<Tile> tilesOnBoardList = new ArrayList<>(tilesOnBoard);
 
-		// create a list of empty squares adjacent to letters on the board
 		Coord coord = new Coord(startx, starty);
 		// for each letter on the board, check if the word can be added in the
 		// vertical or horizontal direction using the letter already on the
 		// board, which is compared with every letter in the word
 		for (int i = 0; i < tilesOnBoardList.size(); i++) {
 			for (int j = 0; j < letters.getLetters().size(); j++) {
-				if (tilesOnBoardList.get(i).getChar() == letters.getLetters().get(j).getChar()
+				if (tilesOnBoardList.get(i).getLetter() == letters.getLetters().get(j).getLetter()
 						&& letters.getLetters().size() > 1) {
 					// move is a singular possible move for a list of letters,
-					if (dir.equals("vertical")) {
+					if (dir.equals(ScrabbleConstant.VERTICAL)) {
 						return findVerticalIntersections(letters);
 					} else {
 						return findHorizontalIntersections(letters);
@@ -321,7 +319,7 @@ public class Board {
 		// using the coordinate as the starting point for each letter in the
 		// word being checked
 		for (int j = 0; j < letters.getLetters().size(); j++) {
-			if (dir.equals("vertical")) {
+			if (dir.equals(ScrabbleConstant.VERTICAL)) {
 				move = findVerticalAdj(letters, j, coord);
 			} else {
 				move = findHorizontalAdj(letters, j, coord);
@@ -339,7 +337,7 @@ public class Board {
 	 */
 	private Move getFirstMove(Move letters, String dir) {
 		// check if the word is a one-letter word
-		if (letters.getLetters().size() == 1 && !isWord(String.valueOf(letters.getLetters().get(0).getChar())))
+		if (letters.getLetters().size() == 1 && !isWord(String.valueOf(letters.getLetters().get(0).getLetter())))
 			return null;
 		// create a coordinate at the center of the board
 		Coord coord = new Coord(letters.getStartx(), letters.getStarty());
@@ -348,7 +346,7 @@ public class Board {
 		// for each letter, check vertical and horizontal directions that the
 		// word can be placed, starting at the given coordinate (the center)
 		for (int j = 0; j < letters.getLetters().size(); j++) {
-			if (dir.equals("vertical")) {
+			if (dir.equals(ScrabbleConstant.VERTICAL)) {
 				move = findVerticalAdj(letters, j, coord);
 			} else {
 				move = findHorizontalAdj(letters, j, coord);
@@ -372,15 +370,15 @@ public class Board {
 		int c = letters.getStarty();
 		for (int i = 0; i < letters.getLetters().size(); i++) {
 			if (boardArr[r + i][c].getLetter() == null || (boardArr[r + i][c].getLetter() != null
-					&& boardArr[r + i][c].getLetter().getChar() == letters.getLetters().get(i).getChar())) {
-				Tile temp = new Tile(letters.getLetters().get(i).getChar(), -1);
+					&& boardArr[r + i][c].getLetter().getLetter() == letters.getLetters().get(i).getLetter())) {
+				Tile temp = new Tile(letters.getLetters().get(i).getLetter(), -1);
 				temp.setLoc(new Coord(r + i, c));
 				move.getLetters().add(temp);
 			} else {
 				return null;
-			}	
+			}
 		}
-		if (!isLegalMove(move, "vertical"))
+		if (!isLegalMove(move, ScrabbleConstant.VERTICAL))
 			return null;
 
 		if (move.getLetters().isEmpty())
@@ -405,14 +403,14 @@ public class Board {
 			int c = coord.getCol();
 			for (int i = 0; i < letters.getLetters().size(); i++) {
 				if (boardArr[r + i][c].getLetter() == null) {
-					Tile temp = new Tile(letters.getLetters().get(i).getChar(), -1);
+					Tile temp = new Tile(letters.getLetters().get(i).getLetter(), -1);
 					temp.setLoc(new Coord(r + i, c));
 					move.getLetters().add(temp);
 				} else {
 					return null;
 				}
 			}
-			if (!isLegalMove(move, "vertical"))
+			if (!isLegalMove(move, ScrabbleConstant.VERTICAL))
 				return null;
 		}
 		if (move.getLetters().isEmpty())
@@ -435,15 +433,15 @@ public class Board {
 		int c = letters.getStarty();
 		for (int i = 0; i < letters.getLetters().size(); i++) {
 			if (boardArr[r][c + i].getLetter() == null || (boardArr[r][c + i].getLetter() != null
-					&& boardArr[r][c + i].getLetter().getChar() == letters.getLetters().get(i).getChar())) {
-				Tile temp = new Tile(letters.getLetters().get(i).getChar(), -1);
+					&& boardArr[r][c + i].getLetter().getLetter() == letters.getLetters().get(i).getLetter())) {
+				Tile temp = new Tile(letters.getLetters().get(i).getLetter(), -1);
 				temp.setLoc(new Coord(r, c + i));
 				move.getLetters().add(temp);
 			} else {
 				return null;
 			}
 		}
-		if (!isLegalMove(move, "horizontal"))
+		if (!isLegalMove(move, ScrabbleConstant.HORIZONTAL))
 			return null;
 
 		if (move.getLetters().isEmpty())
@@ -468,14 +466,14 @@ public class Board {
 			int c = coord.getCol() - letterIndex;
 			for (int i = 0; i < letters.getLetters().size(); i++) {
 				if (boardArr[r][c + i].getLetter() == null) {
-					Tile temp = new Tile(letters.getLetters().get(i).getChar(), -1);
+					Tile temp = new Tile(letters.getLetters().get(i).getLetter(), -1);
 					temp.setLoc(new Coord(r, c + i));
 					move.getLetters().add(temp);
 				} else {
 					return null;
 				}
 			}
-			if (!isLegalMove(move, "horizontal"))
+			if (!isLegalMove(move, ScrabbleConstant.HORIZONTAL))
 				return null;
 		}
 		if (move.getLetters().isEmpty())
@@ -499,24 +497,24 @@ public class Board {
 		// check the word created in the vertical direction only once, then for
 		// every letter in the move, check the word created in the horizontal
 		// direction
-		if (dir.equals("vertical")) {
+		if (dir.equals(ScrabbleConstant.VERTICAL)) {
 			// add the letters in the move to the word created
 			for (int i = 0; i < move.getLetters().size(); i++) {
-				word += move.getLetters().get(i).getChar();
+				word += move.getLetters().get(i).getLetter();
 			}
 			// add any adjacent letters on the board above the first letter in
 			// move, adds the letters to the beginning of the word created
 			r = move.getLetters().get(0).getLoc().getRow() - 1;
 			c = move.getLetters().get(0).getLoc().getCol();
 			while (r >= 0 && boardArr[r][c].getLetter() != null) {
-				word = boardArr[r][c].getLetter().getChar() + word;
+				word = boardArr[r][c].getLetter().getLetter() + word;
 				r--;
 			}
 			// add any adjacent letters on the board below the last letter in
 			// move, adds the letters to the end of the word created
 			r = move.getLetters().get(move.getLetters().size() - 1).getLoc().getRow() + 1;
 			while (r < length && boardArr[r][c].getLetter() != null) {
-				word += boardArr[r][c].getLetter().getChar();
+				word += boardArr[r][c].getLetter().getLetter();
 				r++;
 			}
 			// check if the created word is in the dictionary provided if
@@ -532,18 +530,18 @@ public class Board {
 				// clear the word to be checked
 				word = "";
 				// add the current letter to the word to be checked
-				word += move.getLetters().get(i).getChar();
+				word += move.getLetters().get(i).getLetter();
 				r = move.getLetters().get(i).getLoc().getRow();
 				c = move.getLetters().get(i).getLoc().getCol() - 1;
 				// add letters left of the current letter
 				while (c >= 0 && boardArr[r][c].getLetter() != null) {
-					word = boardArr[r][c].getLetter().getChar() + word;
+					word = boardArr[r][c].getLetter().getLetter() + word;
 					c--;
 				}
 				// add letters right of the current letter
 				c = move.getLetters().get(move.getLetters().size() - 1).getLoc().getCol() + 1;
 				while (c < length && boardArr[r][c].getLetter() != null) {
-					word += boardArr[r][c].getLetter().getChar();
+					word += boardArr[r][c].getLetter().getLetter();
 					c++;
 				}
 				// check if the created word is in the dictionary provided if
@@ -552,24 +550,24 @@ public class Board {
 					return false;
 			}
 		}
-		if (dir.equals("horizontal")) {
+		if (dir.equals(ScrabbleConstant.HORIZONTAL)) {
 			// add the letters in the move to the word created
 			for (int i = 0; i < move.getLetters().size(); i++) {
-				word += move.getLetters().get(i).getChar();
+				word += move.getLetters().get(i).getLetter();
 			}
 			// add any adjacent letters on the board left of the first letter in
 			// move, adds the letters to the beginning of the word created
 			r = move.getLetters().get(0).getLoc().getRow();
 			c = move.getLetters().get(0).getLoc().getCol() - 1;
 			while (c >= 0 && boardArr[r][c].getLetter() != null) {
-				word = boardArr[r][c].getLetter().getChar() + word;
+				word = boardArr[r][c].getLetter().getLetter() + word;
 				c--;
 			}
 			// add any adjacent letters on the board right of the last letter in
 			// move, adds the letters to the end of the word created
 			c = move.getLetters().get(move.getLetters().size() - 1).getLoc().getCol() + 1;
 			while (c < length && boardArr[r][c].getLetter() != null) {
-				word += boardArr[r][c].getLetter().getChar();
+				word += boardArr[r][c].getLetter().getLetter();
 				c++;
 			}
 			// check if the created word is in the dictionary provided if
@@ -585,18 +583,18 @@ public class Board {
 				// clear the word to be checked
 				word = "";
 				// add the current letter to the word to be checked
-				word += move.getLetters().get(i).getChar();
+				word += move.getLetters().get(i).getLetter();
 				r = move.getLetters().get(i).getLoc().getRow() - 1;
 				c = move.getLetters().get(i).getLoc().getCol();
 				// add letters above the current letter
 				while (r >= 0 && boardArr[r][c].getLetter() != null) {
-					word = boardArr[r][c].getLetter().getChar() + word;
+					word = boardArr[r][c].getLetter().getLetter() + word;
 					r--;
 				}
 				// add letters below the current letter
 				r = move.getLetters().get(move.getLetters().size() - 1).getLoc().getRow() + 1;
 				while (r < length && boardArr[r][c].getLetter() != null) {
-					word += boardArr[r][c].getLetter().getChar();
+					word += boardArr[r][c].getLetter().getLetter();
 					r++;
 				}
 				// check if the created word is in the dictionary provided if
